@@ -29,7 +29,7 @@ export class SseClient {
   }
 
   private adjustOptions(options: SseOptions): SseOptions {
-    return Object.assign({}, { keepAlive: false, reconectionDelay: 30_000 }, options);
+    return Object.assign({}, { keepAlive: false, reconnectionDelay: 30_000 }, options);
   }
 
   private adjustRequestOptions(options: SseRequestOptions): SseRequestOptions {
@@ -40,7 +40,10 @@ export class SseClient {
     return this.httpClient
       .request<string>(method, url, requestOptions as any)
       .pipe(repeatWhen((completed) => completed.pipe(takeWhile(() => options.keepAlive)).pipe(delay(options.reconnectionDelay))))
-      .subscribe((event) => this.parseStremEvent(event, observer), (error) => observer.error(error));
+      .subscribe(
+        (event) => this.parseStremEvent(event, observer),
+        (error) => observer.error(error)
+      );
   }
 
   private parseStremEvent(event: HttpEvent<string>, observer: Subscriber<string>): void {
