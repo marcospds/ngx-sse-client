@@ -17,7 +17,16 @@ export class SseClient {
 
   constructor(private httpClient: HttpClient) {}
 
-  public stream(url: string, options?: SseOptions, requestOptions?: SseRequestOptions): Observable<string>;
+  /**
+   * Connects to the server's SSE stream request.
+   *
+   * @param url server source URL
+   * @param options an object of `SseOption`
+   * @param requestOptions `HttpClient` request options
+   * @param method the HTTP request method
+   *
+   * @returns an observable with the stream request
+   */
   public stream(url: string, options?: SseOptions, requestOptions?: SseRequestOptions, method = 'GET'): Observable<string> {
     options = this.adjustOptions(options);
     requestOptions = this.adjustRequestOptions(requestOptions);
