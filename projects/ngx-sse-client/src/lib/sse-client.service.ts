@@ -44,7 +44,7 @@ export class SseClient {
    *
    * @returns an observable of all events for the request, with the response body of type string.
    */
-  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'text' }): Observable<string>;
+  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'event' }): Observable<string>;
 
   public stream(url: string, options?: SseOptions, requestOptions?: SseRequestOptions, method = 'GET'): Observable<string | Event> {
     this.adjustOptions(options);
@@ -57,7 +57,7 @@ export class SseClient {
   }
 
   private adjustOptions(options: SseOptions): void {
-    this.sseOptions = Object.assign({}, { keepAlive: true, reconnectionDelay: 5_000, responseType: 'text' }, options);
+    this.sseOptions = Object.assign({}, { keepAlive: true, reconnectionDelay: 5_000, responseType: 'event' }, options);
   }
 
   private adjustRequestOptions(options: SseRequestOptions): void {
@@ -71,15 +71,15 @@ export class SseClient {
       .pipe(
         retryWhen((error) =>
           error
-            .pipe(tap(() => this.dispatchStreamData(this.errorEvent(), observer)))
+            .pipe(tap((error) => (this.sseOptions.keepAlive ? this.dispatchStreamData(this.errorEvent(), observer) : observer.error(error))))
             .pipe(takeWhile(() => options.keepAlive))
             .pipe(delay(options.reconnectionDelay))
         )
       )
-      .subscribe((event) => this.parseStremEvent(event, observer));
+      .subscribe((event) => this.parseStreamEvent(event, observer));
   }
 
-  private parseStremEvent(event: HttpEvent<string>, observer: Subscriber<string>): void {
+  private parseStreamEvent(event: HttpEvent<string>, observer: Subscriber<string>): void {
     if (event.type === HttpEventType.DownloadProgress) {
       this.onStreamProgress((event as HttpDownloadProgressEvent).partialText, observer);
       return;
