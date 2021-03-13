@@ -1,7 +1,7 @@
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, Subscriber, Subscription } from 'rxjs';
-import { delay, repeatWhen, takeWhile } from 'rxjs/operators';
+import { delay, repeatWhen, retryWhen, takeWhile, tap } from 'rxjs/operators';
 
 import { SseOptions } from './sse-options.interface';
 import { SseRequestOptions } from './sse-request-options.interface';
@@ -15,44 +15,68 @@ export class SseClient {
   private progress = 0;
   private chunk = '';
 
+  private sseOptions: SseOptions;
+  private httpClientOptions: any;
+
   constructor(private httpClient: HttpClient) {}
 
   /**
-   * Connects to the server's SSE stream request.
+   * Constructs a request which listen to the SSE and interprets the data as
+   * events and returns the full event stream.
    *
-   * @param url server source URL
+   * @param url the endpoint URL.
    * @param options an object of `SseOption`
-   * @param requestOptions `HttpClient` request options
-   * @param method the HTTP request method
+   * @param requestOptions the HTTP options to send with the request.
+   * @param method the HTTP method
    *
-   * @returns an observable with the stream request
+   * @returns an observable of all events for the request, with the response body of type `Event`.
    */
-  public stream(url: string, options?: SseOptions, requestOptions?: SseRequestOptions, method = 'GET'): Observable<string> {
-    options = this.adjustOptions(options);
-    requestOptions = this.adjustRequestOptions(requestOptions);
+  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'event' }): Observable<Event>;
 
-    return new Observable<string>((observer) => {
-      const subscription = this.subscribeStreamRequest(url, options, requestOptions, method, observer);
+  /**
+   * Constructs a request which listen to the SSE and interprets the data as a
+   * string text and returns the full event stream.
+   *
+   * @param url the endpoint URL.
+   * @param options an object of `SseOption`
+   * @param requestOptions the HTTP options to send with the request.
+   * @param method the HTTP method
+   *
+   * @returns an observable of all events for the request, with the response body of type string.
+   */
+  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'text' }): Observable<string>;
+
+  public stream(url: string, options?: SseOptions, requestOptions?: SseRequestOptions, method = 'GET'): Observable<string | Event> {
+    this.adjustOptions(options);
+    this.adjustRequestOptions(requestOptions);
+
+    return new Observable<string | Event>((observer) => {
+      const subscription = this.subscribeStreamRequest(url, this.sseOptions, this.httpClientOptions, method, observer);
       return () => subscription.unsubscribe();
     });
   }
 
-  private adjustOptions(options: SseOptions): SseOptions {
-    return Object.assign({}, { keepAlive: false, reconnectionDelay: 30_000 }, options);
+  private adjustOptions(options: SseOptions): void {
+    this.sseOptions = Object.assign({}, { keepAlive: true, reconnectionDelay: 5_000, responseType: 'text' }, options);
   }
 
-  private adjustRequestOptions(options: SseRequestOptions): SseRequestOptions {
-    return Object.assign({}, options, { reportProgress: true, observe: 'events', responseType: 'text' });
+  private adjustRequestOptions(options: SseRequestOptions): void {
+    this.httpClientOptions = Object.assign({}, options as any, { reportProgress: true, observe: 'events', responseType: 'text' });
   }
 
-  private subscribeStreamRequest(url: string, options: SseOptions, requestOptions: SseRequestOptions, method: string, observer: Subscriber<string>): Subscription {
+  private subscribeStreamRequest(url: string, options: SseOptions, requestOptions: any, method: string, observer: Subscriber<string>): Subscription {
     return this.httpClient
-      .request<string>(method, url, requestOptions as any)
+      .request<string>(method, url, requestOptions)
       .pipe(repeatWhen((completed) => completed.pipe(takeWhile(() => options.keepAlive)).pipe(delay(options.reconnectionDelay))))
-      .subscribe(
-        (event) => this.parseStremEvent(event, observer),
-        (error) => observer.error(error)
-      );
+      .pipe(
+        retryWhen((error) =>
+          error
+            .pipe(tap(() => this.dispatchStreamData(this.errorEvent(), observer)))
+            .pipe(takeWhile(() => options.keepAlive))
+            .pipe(delay(options.reconnectionDelay))
+        )
+      )
+      .subscribe((event) => this.parseStremEvent(event, observer));
   }
 
   private parseStremEvent(event: HttpEvent<string>, observer: Subscriber<string>): void {
@@ -67,37 +91,22 @@ export class SseClient {
     }
   }
 
-  /**
-   * Called when the stream is receiving data from the server.
-   *
-   * @param data
-   * @param observer
-   */
   private onStreamProgress(data: string, observer: Subscriber<string>): void {
     data = data.substring(this.progress);
     this.progress += data.length;
     data.split(/(\r\n|\r|\n){2}/g).forEach((part) => this.parseEventData(part, observer));
   }
 
-  /**
-   * Called when the stream is completed by the server.
-   *
-   * @param event
-   * @param observer
-   */
   private onStreamCompleted(data: string, observer: Subscriber<string>): void {
     this.onStreamProgress(data, observer);
     this.dispatchStreamData(this.parseEventChunk(this.chunk), observer);
+
     this.chunk = '';
     this.progress = 0;
+
+    this.dispatchStreamData(this.errorEvent(), observer);
   }
 
-  /**
-   * Parses the event data part.
-   *
-   * @param part
-   * @param observer
-   */
   private parseEventData(part: string, observer: Subscriber<string>) {
     if (part.trim().length === 0) {
       this.dispatchStreamData(this.parseEventChunk(this.chunk), observer);
@@ -107,41 +116,42 @@ export class SseClient {
     }
   }
 
-  /**
-   * Parses the event chunk part.
-   * @param chunk
-   */
-  private parseEventChunk(chunk: string): string {
-    if (!chunk || chunk.length === 0) return '';
+  private parseEventChunk(chunk: string): MessageEvent {
+    if (!chunk || chunk.length === 0) return;
 
-    let data = '';
-    chunk.split(/\n|\r\n|\r/).forEach((line) => (data += this.parseChunkLine(line.trim())));
+    const chunkEvent: ChunkEvent = { id: null, data: '', event: 'message' };
+    chunk.split(/\n|\r\n|\r/).forEach((line) => this.parseChunkLine(line.trim(), chunkEvent));
 
-    return data;
+    return new MessageEvent(chunkEvent.event, { lastEventId: chunkEvent.id, data: chunkEvent.data });
   }
 
-  /**
-   * Parse the chunk line.
-   * @param line
-   */
-  private parseChunkLine(line: string): string {
+  private parseChunkLine(line: string, event: ChunkEvent): void {
     const index = line.indexOf(SseClient.SEPARATOR);
-    if (index <= 0) return '';
+    if (index <= 0) return null;
 
     const field = line.substring(0, index);
-    if (!(field === 'data')) return '';
+    if (Object.keys(event).findIndex((key: string) => key === field) === -1) return;
 
-    return line.substring(index + 1);
+    let data = line.substring(index + 1);
+    if (field === 'data') data = event.data + data;
+
+    event[field] = data;
   }
 
-  /**
-   * Dispatch the stream data through the observer.
-   *
-   * @param data
-   * @param observer
-   */
-  private dispatchStreamData(data: string, observer: Subscriber<unknown>): void {
-    if (!data || data.length === 0) return;
-    observer.next(data);
+  private dispatchStreamData(event: Event, observer: Subscriber<unknown>): void {
+    if (!event) return;
+    if (event.type === 'error' && this.sseOptions.responseType !== 'event') return;
+
+    if (this.sseOptions.responseType === 'event') {
+      observer.next(event);
+    } else {
+      observer.next((event as MessageEvent).data);
+    }
+  }
+
+  private errorEvent(): Event {
+    return new Event('error');
   }
 }
+
+type ChunkEvent = { id: string; data: string; event: 'message' };
