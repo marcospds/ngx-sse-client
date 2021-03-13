@@ -26,20 +26,18 @@ import { SseClient } from 'ngx-sse-client';
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
-  constructor(private authService: AuthService, private sseClient: SseClient) {
+  constructor(private sseClient: SseClient) {
     const sseOptions = { keepAlive: true, reconnectionDelay: 1_000, responseType: 'event' };
-    const headers = new HttpHeaders().set('Authorization', `Basic ${btoa(this.authService.getToken())}`);
+    const headers = new HttpHeaders().set('Authorization', `Basic YWRtaW46YWRtaW4=`);
 
-    this.sseClient.stream('/subscribe', sseOptions, { headers }, 'POST').subscribe(
-      (event) => {
+    this.sseClient.stream('/subscribe', sseOptions, { headers }, 'POST')
+      .subscribe((event) => {
         if (event.type === 'error') {
           console.error('SSE request error!');
         } else {
           console.info(`SSE request with type "${event.type}" and data "${event.data}"`);
         }
-      },
-      (error) => console.error(error)
-    );
+      });
   }
 }
 ```
@@ -106,7 +104,7 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 ```
 
 > :warning: It is important to know that, if the response type is set to `text`,
-> no errors will be returned, only the date from successful requests.
+> no errors will be returned, only the data from successful requests.
 
 ---
 
