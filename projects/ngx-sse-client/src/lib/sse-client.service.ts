@@ -44,7 +44,7 @@ export class SseClient {
    *
    * @returns an observable of all events for the request, with the response body of type string.
    */
-  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'event' }, requestOptions?: SseRequestOptions, method?: string): Observable<string>;
+  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'text' }, requestOptions?: SseRequestOptions, method?: string): Observable<string>;
 
   public stream(url: string, options?: SseOptions, requestOptions?: SseRequestOptions, method = 'GET'): Observable<string | Event> {
     this.sseOptions = Object.assign({}, defaultSseOptions, options);

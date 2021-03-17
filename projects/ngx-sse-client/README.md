@@ -27,10 +27,9 @@ import { SseClient } from 'ngx-sse-client';
 })
 export class AppComponent implements OnInit {
   constructor(private sseClient: SseClient) {
-    const sseOptions = { keepAlive: true, reconnectionDelay: 1_000, responseType: 'event' };
     const headers = new HttpHeaders().set('Authorization', `Basic YWRtaW46YWRtaW4=`);
 
-    this.sseClient.stream('/subscribe', sseOptions, { headers }, 'POST').subscribe((event) => {
+    this.sseClient.stream('/subscribe', { keepAlive: true, reconnectionDelay: 1_000, responseType: 'event' }, { headers }, 'POST').subscribe((event) => {
       if (event.type === 'error') {
         console.error('SSE request error!');
       } else {
