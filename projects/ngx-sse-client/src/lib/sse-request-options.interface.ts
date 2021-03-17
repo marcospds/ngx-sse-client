@@ -6,3 +6,5 @@ export interface SseRequestOptions {
   params?: HttpParams | { [param: string]: string | string[] };
   withCredentials?: boolean;
 }
+
+export const defaultRequestOptions = { observe: 'events', reportProgress: true, responseType: 'text' };

@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { Observable, Subscriber, Subscription } from 'rxjs';
 import { delay, repeatWhen, retryWhen, takeWhile, tap } from 'rxjs/operators';
 
-import { SseOptions } from './sse-options.interface';
-import { SseRequestOptions } from './sse-request-options.interface';
+import { defaultSseOptions, SseOptions } from './sse-options.interface';
+import { defaultRequestOptions, SseRequestOptions } from './sse-request-options.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -31,7 +31,7 @@ export class SseClient {
    *
    * @returns an observable of all events for the request, with the response body of type `Event`.
    */
-  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'event' }): Observable<Event>;
+  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'event' }, requestOptions?: SseRequestOptions, method?: string): Observable<Event>;
 
   /**
    * Constructs a request which listen to the SSE and interprets the data as a
@@ -44,11 +44,11 @@ export class SseClient {
    *
    * @returns an observable of all events for the request, with the response body of type string.
    */
-  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'event' }): Observable<string>;
+  public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'event' }, requestOptions?: SseRequestOptions, method?: string): Observable<string>;
 
   public stream(url: string, options?: SseOptions, requestOptions?: SseRequestOptions, method = 'GET'): Observable<string | Event> {
-    this.adjustOptions(options);
-    this.adjustRequestOptions(requestOptions);
+    this.sseOptions = Object.assign({}, defaultSseOptions, options);
+    this.httpClientOptions = Object.assign({}, requestOptions as any, defaultRequestOptions);
 
     return new Observable<string | Event>((observer) => {
       const subscription = this.subscribeStreamRequest(url, this.sseOptions, this.httpClientOptions, method, observer);
@@ -56,27 +56,23 @@ export class SseClient {
     });
   }
 
-  private adjustOptions(options: SseOptions): void {
-    this.sseOptions = Object.assign({}, { keepAlive: true, reconnectionDelay: 5_000, responseType: 'event' }, options);
-  }
-
-  private adjustRequestOptions(options: SseRequestOptions): void {
-    this.httpClientOptions = Object.assign({}, options as any, { reportProgress: true, observe: 'events', responseType: 'text' });
-  }
-
-  private subscribeStreamRequest(url: string, options: SseOptions, requestOptions: any, method: string, observer: Subscriber<string>): Subscription {
+  private subscribeStreamRequest(url: string, options: SseOptions, requestOptions: any, method: string, observer: Subscriber<string | Event>): Subscription {
     return this.httpClient
       .request<string>(method, url, requestOptions)
-      .pipe(repeatWhen((completed) => completed.pipe(takeWhile(() => options.keepAlive)).pipe(delay(options.reconnectionDelay))))
-      .pipe(
-        retryWhen((error) =>
-          error
-            .pipe(tap((error) => (this.sseOptions.keepAlive ? this.dispatchStreamData(this.errorEvent(), observer) : observer.error(error))))
-            .pipe(takeWhile(() => options.keepAlive))
-            .pipe(delay(options.reconnectionDelay))
-        )
-      )
+      .pipe(repeatWhen((completed) => this.repeatWhen(completed, options.keepAlive, options.reconnectionDelay)))
+      .pipe(retryWhen((error) => this.retryWhen(error, options.keepAlive, options.reconnectionDelay, observer)))
       .subscribe((event) => this.parseStreamEvent(event, observer));
+  }
+
+  private repeatWhen(completed: Observable<any>, keepAlive: boolean, reconnectionDelay: number): Observable<any> {
+    return completed.pipe(takeWhile(() => keepAlive)).pipe(delay(reconnectionDelay));
+  }
+
+  private retryWhen(error: Observable<any>, keepAlive: boolean, reconnectionDelay: number, observer: Subscriber<string | Event>): Observable<any> {
+    return error
+      .pipe(tap(() => (keepAlive ? this.dispatchStreamData(this.errorEvent(), observer) : observer.error(error))))
+      .pipe(takeWhile(() => keepAlive))
+      .pipe(delay(reconnectionDelay));
   }
 
   private parseStreamEvent(event: HttpEvent<string>, observer: Subscriber<string>): void {
@@ -139,14 +135,20 @@ export class SseClient {
   }
 
   private dispatchStreamData(event: Event, observer: Subscriber<unknown>): void {
-    if (!event) return;
-    if (event.type === 'error' && this.sseOptions.responseType !== 'event') return;
+    if (!this.validEvent(event)) return;
 
     if (this.sseOptions.responseType === 'event') {
       observer.next(event);
     } else {
       observer.next((event as MessageEvent).data);
     }
+  }
+
+  private validEvent(event: Event): boolean {
+    if (!event) return false;
+    if (event.type === 'error' && this.sseOptions.responseType !== 'event') return false;
+    if (event.type !== 'error' && (!(event as MessageEvent).data || !(event as MessageEvent).data.length)) return false;
+    return true;
   }
 
   private errorEvent(): Event {

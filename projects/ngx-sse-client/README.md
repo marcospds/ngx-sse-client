@@ -30,20 +30,19 @@ export class AppComponent implements OnInit {
     const sseOptions = { keepAlive: true, reconnectionDelay: 1_000, responseType: 'event' };
     const headers = new HttpHeaders().set('Authorization', `Basic YWRtaW46YWRtaW4=`);
 
-    this.sseClient.stream('/subscribe', sseOptions, { headers }, 'POST')
-      .subscribe((event) => {
-        if (event.type === 'error') {
-          console.error('SSE request error!');
-        } else {
-          console.info(`SSE request with type "${event.type}" and data "${event.data}"`);
-        }
-      });
+    this.sseClient.stream('/subscribe', sseOptions, { headers }, 'POST').subscribe((event) => {
+      if (event.type === 'error') {
+        console.error('SSE request error!');
+      } else {
+        console.info(`SSE request with type "${event.type}" and data "${event.data}"`);
+      }
+    });
   }
 }
 ```
 
 > **Only** when `keepAlive` is set to `false` and **only** request errors can be
-> captured as the second parameter of the above `Observable`.
+> captured as the second parameter of the above `subscribe` method.
 
 ## `stream` parameters
 
@@ -65,9 +64,9 @@ Bellow there's the list of possible options:
 | ------------------- | -------------------------------------------------- | :-------: |
 | `keepAlive`         | `true` to reconnect after the request is completed |  `true`   |
 | `reconnectionDelay` | defines a delay before reconnecting                | 5 seconds |
-| `responseType`      | request response type, `event` or `text`           |  `event`  |
+| `responseType`      | request response type, `event` or `text`           |  `text`   |
 
-### `keepAlive`:
+### `keepAlive`
 
 When set to `true`, will automatically reconnect when the request is closed by
 an error (including timeout errors) or completed. In this case, to close the
@@ -80,8 +79,7 @@ Defines a delay before reconnecting with the server. This is only useful when
 
 ### `responseType`
 
-Defines the response type to be cast from the server to client, `event` is the
-default.
+Defines the response type to be cast from the server to client.
 
 `event`: a `MessageEvent` will be returned with the message sent from the server
 (the type will obey the one of the sent message). Otherwise in case of errors, a
@@ -109,7 +107,3 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 ---
 
 Please, feel free to send your contributions.
-
-```
-
-```
