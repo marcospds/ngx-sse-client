@@ -70,7 +70,7 @@ export class SseClient {
 
   private retryWhen(error: Observable<any>, keepAlive: boolean, reconnectionDelay: number, observer: Subscriber<string | Event>): Observable<any> {
     return error
-      .pipe(tap(() => (keepAlive ? this.dispatchStreamData(this.errorEvent(), observer) : observer.error(error))))
+      .pipe(tap((e) => (keepAlive ? this.dispatchStreamData(this.errorEvent(e), observer) : observer.error(error))))
       .pipe(takeWhile(() => keepAlive))
       .pipe(delay(reconnectionDelay));
   }
@@ -82,7 +82,7 @@ export class SseClient {
     }
 
     if (event.type === HttpEventType.Response) {
-      this.onStreamCompleted((event as HttpResponse<string>).body, observer);
+      this.onStreamCompleted(event as HttpResponse<string>, observer);
       return;
     }
   }
@@ -93,8 +93,8 @@ export class SseClient {
     data.split(/(\r\n|\r|\n){2}/g).forEach((part) => this.parseEventData(part, observer));
   }
 
-  private onStreamCompleted(data: string, observer: Subscriber<string>): void {
-    this.onStreamProgress(data, observer);
+  private onStreamCompleted(response: HttpResponse<string>, observer: Subscriber<string>): void {
+    this.onStreamProgress(response.body, observer);
     this.dispatchStreamData(this.parseEventChunk(this.chunk), observer);
 
     this.chunk = '';
@@ -151,8 +151,8 @@ export class SseClient {
     return true;
   }
 
-  private errorEvent(): Event {
-    return new Event('error');
+  private errorEvent(error?: any): Event {
+    return new ErrorEvent('error', { error, message: error?.message });
   }
 }
 

@@ -31,4 +31,4 @@ export interface SseOptions {
   responseType?: 'event' | 'text';
 }
 
-export const defaultSseOptions: SseOptions = { keepAlive: true, reconnectionDelay: 5_00, responseType: 'text' };
+export const defaultSseOptions: SseOptions = { keepAlive: true, reconnectionDelay: 5_000, responseType: 'text' };

@@ -31,9 +31,11 @@ export class AppComponent implements OnInit {
 
     this.sseClient.stream('/subscribe', { keepAlive: true, reconnectionDelay: 1_000, responseType: 'event' }, { headers }, 'POST').subscribe((event) => {
       if (event.type === 'error') {
-        console.error('SSE request error!');
+        const errorEvent = event as ErrorEvent;
+        console.error(errorEvent.error, errorEvent.message);
       } else {
-        console.info(`SSE request with type "${event.type}" and data "${event.data}"`);
+        const messageEvent = event as MessageEvent;
+        console.info(`SSE request with type "${messageEvent.type}" and data "${messageEvent.data}"`);
       }
     });
   }
@@ -81,15 +83,17 @@ Defines a delay before reconnecting with the server. This is only useful when
 Defines the response type to be cast from the server to client.
 
 `event`: a `MessageEvent` will be returned with the message sent from the server
-(the type will obey the one of the sent message). Otherwise in case of errors, a
-default `Event` with type **error** will be returned. For example:
+(the type will obey the one of the sent message). Otherwise in case of errors,
+an `ErrorEvent` with type **error** will be returned. For example:
 
 ```typescript
 this.sseClient.stream('/subscribe').subscribe((event) => {
   if (event.type === 'error') {
-    console.error('SSE request error!');
+    const errorEvent = event as ErrorEvent;
+    console.error(errorEvent.error, errorEvent.message);
   } else {
-    console.info(`SSE request with type "${event.type}" and data "${event.data}"`);
+    const messageEvent = event as MessageEvent;
+    console.info(`SSE request with type "${messageEvent.type}" and data "${messageEvent.data}"`);
   }
 });
 ```
