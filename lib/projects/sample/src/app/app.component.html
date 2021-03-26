@@ -1,0 +1,10 @@
+<h1>SSE Events (using <code>ngx-sse-client</code>):</h1>
+<div *ngFor="let event of sseEvents">{{ event }}</div>
+
+<h1>SOURCE Events (not compatible with IE):</h1>
+<div *ngFor="let event of sourceEvents">{{ event }}</div>
+
+<div class="buttons-group">
+  <button (click)="emit()">EMIT</button>
+  <button (click)="close()">CLOSE</button>
+</div>

@@ -1,3 +1,5 @@
+import './events-polyfill';
+
 import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, Subscriber, Subscription } from 'rxjs';
@@ -118,7 +120,7 @@ export class SseClient {
     const chunkEvent: ChunkEvent = { id: null, data: '', event: 'message' };
     chunk.split(/\n|\r\n|\r/).forEach((line) => this.parseChunkLine(line.trim(), chunkEvent));
 
-    return new MessageEvent(chunkEvent.event, { lastEventId: chunkEvent.id, data: chunkEvent.data });
+    return this.messageEvent(chunkEvent.event, { lastEventId: chunkEvent.id, data: chunkEvent.data });
   }
 
   private parseChunkLine(line: string, event: ChunkEvent): void {
@@ -149,6 +151,10 @@ export class SseClient {
     if (event.type === 'error' && this.sseOptions.responseType !== 'event') return false;
     if (event.type !== 'error' && (!(event as MessageEvent).data || !(event as MessageEvent).data.length)) return false;
     return true;
+  }
+
+  private messageEvent(type: string, options: MessageEventInit): MessageEvent {
+    return new MessageEvent(type, options);
   }
 
   private errorEvent(error?: any): Event {

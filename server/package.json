@@ -1,0 +1,29 @@
+{
+  "name": "ngx-sse-sample-server",
+  "version": "1.0.0",
+  "description": "A simple Node.js server sample for the ngx-sse-client lib.",
+  "homepage": "https://github.com/rubinhos/ngx-sse-client#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rubinhos/ngx-sse-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rubinhos/ngx-sse-client/issues",
+    "email": "rubinho.santos@outlook.com"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Rubens dos Santos Filho",
+    "email": "rubinho.santos@outlook.com",
+    "url": "https://github.com/rubinhos"
+  },
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "uuid": "^8.3.2"
+  }
+}
