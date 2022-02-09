@@ -1,6 +1,6 @@
 import './events-polyfill';
 
-import { HttpClient, HttpDownloadProgressEvent, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpDownloadProgressEvent, HttpErrorResponse, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, Subscriber, Subscription } from 'rxjs';
 import { delay, repeatWhen, retryWhen, takeWhile, tap } from 'rxjs/operators';
@@ -70,11 +70,23 @@ export class SseClient {
     return completed.pipe(takeWhile(() => keepAlive)).pipe(delay(reconnectionDelay));
   }
 
-  private retryWhen(error: Observable<any>, keepAlive: boolean, reconnectionDelay: number, observer: Subscriber<string | Event>): Observable<any> {
-    return error
-      .pipe(tap((e) => (keepAlive ? this.dispatchStreamData(this.errorEvent(e), observer) : observer.error(error))))
+  private retryWhen(attempts: Observable<any>, keepAlive: boolean, reconnectionDelay: number, observer: Subscriber<string | Event>): Observable<any> {
+    return attempts
+      .pipe(tap((error) => this.threatRequestError(error, observer)))
       .pipe(takeWhile(() => keepAlive))
       .pipe(delay(reconnectionDelay));
+  }
+
+  private threatRequestError(event: HttpErrorResponse, observer: Subscriber<string | Event>): void {
+    this.dispatchStreamData(this.errorEvent(event), observer);
+
+    if (!this.isValidStatus(event.status)) {
+      observer.error(event);
+    }
+  }
+
+  private isValidStatus(status: number): boolean {
+    return status !== undefined && status !== null && status <= 299;
   }
 
   private parseStreamEvent(event: HttpEvent<string>, observer: Subscriber<string>): void {
@@ -158,7 +170,18 @@ export class SseClient {
   }
 
   private errorEvent(error?: any): Event {
-    return new ErrorEvent('error', { error, message: error?.message });
+    let eventInitDict: ErrorEventInit;
+
+    if (error && error.status > 0) {
+      eventInitDict = { error, message: error.message };
+
+      if (!this.isValidStatus(error.status)) {
+        eventInitDict['status'] = error.status;
+        eventInitDict['statusText'] = error.statusText;
+      }
+    }
+
+    return new ErrorEvent('error', eventInitDict);
   }
 }
 

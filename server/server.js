@@ -14,7 +14,7 @@ let emitters = [];
 
 app.use(cors());
 
-app.get('/subscribe', (req, res, next) => {
+app.get('/subscribe', (req, res) => {
   const emitter = { id: uuidv4(), client: res };
 
   req.setTimeout(30_000);
@@ -29,19 +29,14 @@ app.get('/subscribe', (req, res, next) => {
 
   emitters.push(emitter);
   console.info(`SUBSCRIBED ID ${emitter.id}`);
-
-  next();
 });
 
 app.get('/emit', (req, res) => {
-  const remove = [];
-
   emitters.forEach(({ id, client }) => {
     console.info(`EMITTED    ID ${id}`);
     client.write(`id:${id}${END_LINE}data:${new Date().toISOString()}${END_CONTENT}`);
   });
 
-  removeEmitters(remove);
   res.status(200).send();
 });
 

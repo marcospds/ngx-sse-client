@@ -1,21 +1,18 @@
 # NGX SSE Client
 
-A simple **SSE** (Server Sent Events) client for `Angular` applications.
+A simple **SSE** (Server Sent Events) client for `Angular` applications to
+replace the use of `EventSource`.
 
-Based on the [**sse.js**](https://github.com/mpetazzoni/sse.js) project, this
-library uses the `HttpClient` instead of the `XMLHttpRequest` and uses
-`Observable` to receive data from the server, instead of Javascript events.
-
-That way, all requests made from this library can be intercepted correctly, with
-`HttpInterceptor`. It is also possible to decide which request will be made,
-`GET` or `POST` for example, and send other options as in other `HttpClient`
-requests.
+This library uses the `HttpClient` to make the stream request and uses
+`Observable` to receive data from server. That way, all requests can be
+intercepted correctly with `HttpInterceptor`. It is also possible to decide
+which request will be made, `GET` or `POST` for example, and send other options
+as in other `HttpClient` requests.
 
 ## Basic Usage
 
 Inject the `SseClient` service to your component and execute the `stream`
-method, passing the `url` string to connect with the server stream. Here's a
-basic example:
+method, passing the `url` string to connect with. Here's a basic example:
 
 ```typescript
 import { Component, OnInit } from '@angular/core';
@@ -42,9 +39,6 @@ export class AppComponent implements OnInit {
 }
 ```
 
-> **Only** when `keepAlive` is set to `false` and **only** request errors can be
-> captured as the second parameter of the above `subscribe` method.
-
 ## `stream` parameters
 
 Here's a list of possible parameters for the `stream` method:
@@ -64,14 +58,14 @@ Bellow there's the list of possible options:
 | name                | description                                        |  default  |
 | ------------------- | -------------------------------------------------- | :-------: |
 | `keepAlive`         | `true` to reconnect after the request is completed |  `true`   |
-| `reconnectionDelay` | defines a delay before reconnecting                | 5 seconds |
-| `responseType`      | request response type, `event` or `text`           |  `text`   |
+| `reconnectionDelay` | defines a delay before reconnecting                | 3 seconds |
+| `responseType`      | request response type, `event` or `text`           |  `event`  |
 
 ### `keepAlive`
 
 When set to `true`, will automatically reconnect when the request is closed by
-an error (including timeout errors) or completed. In this case, to close the
-connection is necessary to `unsubscribe` manually.
+timeout or completed. In this case, to close the connection is necessary to
+`unsubscribe` manually.
 
 ### `reconnectionDelay`
 
@@ -82,9 +76,14 @@ Defines a delay before reconnecting with the server. This is only useful when
 
 Defines the response type to be cast from the server to client.
 
-`event`: a `MessageEvent` will be returned with the message sent from the server
-(the type will obey the one of the sent message). Otherwise in case of errors,
-an `ErrorEvent` with type **error** will be returned. For example:
+#### `event`
+
+A **`MessageEvent`** will be returned with the message sent from the server - the
+type will obey the one of the message.
+
+Otherwise in case of errors, an **`ErrorEvent`** with type **error** will be returned
+
+For example:
 
 ```typescript
 this.sseClient.stream('/subscribe').subscribe((event) => {
@@ -98,7 +97,9 @@ this.sseClient.stream('/subscribe').subscribe((event) => {
 });
 ```
 
-`text`: in this case, only the message data will be returned. For example:
+#### `text`
+
+In this case, only the message data will be returned. For example:
 
 ```typescript
 this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) => console.log(data));
@@ -107,6 +108,21 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 > :warning: It is important to know that, if the response type is set to `text`,
 > no errors will be returned, only the data from successful requests.
 
+## CHANGELOG
+
+### 2.1.0
+
+#### :beetle: Bug fixes
+
+- unsubscribe the stream request if a server error occurs.
+
+#### :star: Improvements
+
+- added the `status` and `statusText` attributes to the `ErrorEvent`, these
+  will hold details from server errors;
+- changed `responseType` default to `event`;
+- changed `reconnectDelay` default to `3 seconds`.
+
 ---
 
-Please, feel free to send your contributions.
+> Please, feel free to send your contributions. :)

@@ -17,8 +17,8 @@ export class AppComponent {
   public sseEvents: string[] = [];
   public sourceEvents: string[] = [];
 
-  constructor(private httpClient: HttpClient) {
-    new SseClient(this.httpClient).stream(`${this.apiBaseUrl}/subscribe`, { keepAlive: true, responseType: 'event' }).subscribe((e) => {
+  constructor(private httpClient: HttpClient, private sseClient: SseClient) {
+    this.sseClient.stream(`${this.apiBaseUrl}/subscribe`).subscribe((e) => {
       if (e.type === 'error') {
         const message = (e as ErrorEvent).message;
         this.sseEvents.push(`ERROR: ${message}`);
@@ -29,7 +29,7 @@ export class AppComponent {
     });
 
     const event = new EventSource(`${this.apiBaseUrl}/subscribe`);
-    event.addEventListener('error', (e) => this.sourceEvents.push('ERROR'));
+    event.addEventListener('error', (e: ErrorEvent) => this.sourceEvents.push(`ERROR: ${e.message}`));
     event.addEventListener('message', (event) => this.sourceEvents.push(event.data));
   }
 
