@@ -90,6 +90,11 @@ export class SseClient {
   }
 
   private parseStreamEvent(event: HttpEvent<string>, observer: Subscriber<string>): void {
+    if (event.type === HttpEventType.Sent) {
+      this.progress = 0;
+      return;
+    }
+
     if (event.type === HttpEventType.DownloadProgress) {
       this.onStreamProgress((event as HttpDownloadProgressEvent).partialText, observer);
       return;
