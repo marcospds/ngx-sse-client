@@ -110,6 +110,12 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 
 ## CHANGELOG
 
+### 2.1.1
+
+#### :beetle: Bug fixes
+
+- reset progress to zero when recovering from a previous error.
+
 ### 2.1.0
 
 #### :beetle: Bug fixes
