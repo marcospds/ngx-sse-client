@@ -1,10 +1,18 @@
-<h1>SSE Events (using <code>ngx-sse-client</code>):</h1>
-<div *ngFor="let event of sseEvents">{{ event }}</div>
+<div class="events">
+  <div class="event">
+    <h1>
+      SSE Events <small>(using <code>ngx-sse-client</code>):</small>
+    </h1>
+    <div *ngFor="let event of sseEvents">{{ event }}</div>
+  </div>
 
-<h1>SOURCE Events (not compatible with IE):</h1>
-<div *ngFor="let event of sourceEvents">{{ event }}</div>
+  <div class="event">
+    <h1>SOURCE Events <small>(not compatible with IE):</small></h1>
+    <div *ngFor="let event of sourceEvents">{{ event }}</div>
+  </div>
+</div>
 
-<div class="buttons-group">
+<div class="buttons">
   <button (click)="emit()">EMIT</button>
   <button (click)="close()">CLOSE</button>
 </div>

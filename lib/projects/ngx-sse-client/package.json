@@ -1,6 +1,6 @@
 {
   "name": "ngx-sse-client",
-  "version": "2.1.1",
+  "version": "3.0.0",
   "description": "A simple SSE (Server Sent Events) client for Angular applications.",
   "keywords": [
     "angular",
@@ -24,10 +24,10 @@
     "url": "https://github.com/rubinhos"
   },
   "peerDependencies": {
-    "@angular/common": ">=9",
-    "@angular/core": ">=9"
+    "@angular/common": ">=12.2.0",
+    "@angular/core": ">=12.2.0"
   },
   "dependencies": {
-    "tslib": "^1.10.0"
+    "tslib": "^2.3.0"
   }
 }

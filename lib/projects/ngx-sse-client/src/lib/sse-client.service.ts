@@ -1,10 +1,9 @@
-import './events-polyfill';
-
 import { HttpClient, HttpDownloadProgressEvent, HttpErrorResponse, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, Subscriber, Subscription } from 'rxjs';
 import { delay, repeatWhen, retryWhen, takeWhile, tap } from 'rxjs/operators';
 
+import { SseErrorEvent } from './sse-error-event.interface';
 import { defaultSseOptions, SseOptions } from './sse-options.interface';
 import { defaultRequestOptions, SseRequestOptions } from './sse-request-options.interface';
 
@@ -48,7 +47,7 @@ export class SseClient {
    */
   public stream(url: string, options?: { keepAlive?: boolean; reconnectionDelay?: number; responseType?: 'text' }, requestOptions?: SseRequestOptions, method?: string): Observable<string>;
 
-  public stream(url: string, options?: SseOptions, requestOptions?: SseRequestOptions, method = 'GET'): Observable<string | Event> {
+  public stream(url: string, options?: Partial<SseOptions>, requestOptions?: Partial<SseRequestOptions>, method = 'GET'): Observable<string | Event> {
     this.sseOptions = Object.assign({}, defaultSseOptions, options);
     this.httpClientOptions = Object.assign({}, requestOptions as any, defaultRequestOptions);
 
@@ -96,7 +95,7 @@ export class SseClient {
     }
 
     if (event.type === HttpEventType.DownloadProgress) {
-      this.onStreamProgress((event as HttpDownloadProgressEvent).partialText, observer);
+      this.onStreamProgress((event as HttpDownloadProgressEvent).partialText as string, observer);
       return;
     }
 
@@ -113,7 +112,7 @@ export class SseClient {
   }
 
   private onStreamCompleted(response: HttpResponse<string>, observer: Subscriber<string>): void {
-    this.onStreamProgress(response.body, observer);
+    this.onStreamProgress(response.body as string, observer);
     this.dispatchStreamData(this.parseEventChunk(this.chunk), observer);
 
     this.chunk = '';
@@ -131,18 +130,18 @@ export class SseClient {
     }
   }
 
-  private parseEventChunk(chunk: string): MessageEvent {
+  private parseEventChunk(chunk: string): MessageEvent | undefined {
     if (!chunk || chunk.length === 0) return;
 
-    const chunkEvent: ChunkEvent = { id: null, data: '', event: 'message' };
+    const chunkEvent: ChunkEvent = { id: undefined, data: '', event: 'message' };
     chunk.split(/\n|\r\n|\r/).forEach((line) => this.parseChunkLine(line.trim(), chunkEvent));
 
     return this.messageEvent(chunkEvent.event, { lastEventId: chunkEvent.id, data: chunkEvent.data });
   }
 
-  private parseChunkLine(line: string, event: ChunkEvent): void {
+  private parseChunkLine(line: string, event: ChunkEvent) {
     const index = line.indexOf(SseClient.SEPARATOR);
-    if (index <= 0) return null;
+    if (index <= 0) return;
 
     const field = line.substring(0, index);
     if (Object.keys(event).findIndex((key: string) => key === field) === -1) return;
@@ -153,7 +152,7 @@ export class SseClient {
     event[field] = data;
   }
 
-  private dispatchStreamData(event: Event, observer: Subscriber<unknown>): void {
+  private dispatchStreamData(event: Event | undefined, observer: Subscriber<unknown>): void {
     if (!this.validEvent(event)) return;
 
     if (this.sseOptions.responseType === 'event') {
@@ -163,7 +162,7 @@ export class SseClient {
     }
   }
 
-  private validEvent(event: Event): boolean {
+  private validEvent(event: Event | undefined): boolean {
     if (!event) return false;
     if (event.type === 'error' && this.sseOptions.responseType !== 'event') return false;
     if (event.type !== 'error' && (!(event as MessageEvent).data || !(event as MessageEvent).data.length)) return false;
@@ -175,19 +174,19 @@ export class SseClient {
   }
 
   private errorEvent(error?: any): Event {
-    let eventInitDict: ErrorEventInit;
+    let eventData: Partial<SseErrorEvent> | undefined;
 
     if (error && error.status > 0) {
-      eventInitDict = { error, message: error.message };
+      eventData = { error, message: error.message };
 
       if (!this.isValidStatus(error.status)) {
-        eventInitDict['status'] = error.status;
-        eventInitDict['statusText'] = error.statusText;
+        eventData['status'] = error.status;
+        eventData['statusText'] = error.statusText;
       }
     }
 
-    return new ErrorEvent('error', eventInitDict);
+    return new ErrorEvent('error', eventData);
   }
 }
 
-type ChunkEvent = { id: string; data: string; event: 'message' };
+type ChunkEvent = { id: string | undefined; data: string; event: 'message'; [key: string]: any };

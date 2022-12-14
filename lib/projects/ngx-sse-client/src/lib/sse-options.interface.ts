@@ -7,7 +7,7 @@ export interface SseOptions {
    *
    * @default `true`
    */
-  keepAlive?: boolean;
+  keepAlive: boolean;
 
   /**
    * Delay before reconnecting with the server, this is only useful when
@@ -15,7 +15,7 @@ export interface SseOptions {
    *
    * @default `5000`
    */
-  reconnectionDelay?: number;
+  reconnectionDelay: number;
 
   /**
    * Defines the response type.
@@ -28,7 +28,7 @@ export interface SseOptions {
    *
    * @default `text`
    */
-  responseType?: 'event' | 'text';
+  responseType: 'event' | 'text';
 }
 
 export const defaultSseOptions: SseOptions = { keepAlive: true, reconnectionDelay: 3_000, responseType: 'event' };

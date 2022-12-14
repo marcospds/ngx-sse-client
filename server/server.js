@@ -31,7 +31,7 @@ app.get('/subscribe', (req, res) => {
   console.info(`SUBSCRIBED ID ${emitter.id}`);
 });
 
-app.get('/emit', (req, res) => {
+app.get('/emit', (_, res) => {
   emitters.forEach(({ id, client }) => {
     console.info(`EMITTED    ID ${id}`);
     client.write(`id:${id}${END_LINE}data:${new Date().toISOString()}${END_CONTENT}`);
@@ -40,7 +40,7 @@ app.get('/emit', (req, res) => {
   res.status(200).send();
 });
 
-app.get('/close', (req, res) => {
+app.get('/close', (_, res) => {
   removeEmitters(emitters);
   res.status(200).send();
 });

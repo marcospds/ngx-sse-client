@@ -110,6 +110,14 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 
 ## CHANGELOG
 
+### 3.0.0
+
+:warning: Official minimum `Angular` version support changed to **12.2.0**!
+
+#### :star: Improvements
+
+- added support to the `context` attribute on `HttpRequest` options.
+
 ### 2.1.1
 
 #### :beetle: Bug fixes

@@ -1,15 +1,13 @@
-import 'eventsource-polyfill';
-
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { SseClient } from 'ngx-sse-client';
+import { SseClient, SseErrorEvent } from 'ngx-sse-client';
 
 import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styles: ['./app.component.css'],
+  styleUrls: ['./app.component.css'],
 })
 export class AppComponent {
   private apiBaseUrl = environment?.apiBaseUrl || '';
@@ -20,8 +18,8 @@ export class AppComponent {
   constructor(private httpClient: HttpClient, private sseClient: SseClient) {
     this.sseClient.stream(`${this.apiBaseUrl}/subscribe`).subscribe((e) => {
       if (e.type === 'error') {
-        const message = (e as ErrorEvent).message;
-        this.sseEvents.push(`ERROR: ${message}`);
+        const event = e as SseErrorEvent;
+        this.sseEvents.push(`ERROR: ${event.message}, STATUS: ${event.status}, STATUS TEXT: ${event.statusText}`);
       } else {
         const data = (e as MessageEvent).data;
         this.sseEvents.push(data);
@@ -29,8 +27,18 @@ export class AppComponent {
     });
 
     const event = new EventSource(`${this.apiBaseUrl}/subscribe`);
-    event.addEventListener('error', (e: ErrorEvent) => this.sourceEvents.push(`ERROR: ${e.message}`));
-    event.addEventListener('message', (event) => this.sourceEvents.push(event.data));
+    event.addEventListener('error', (event) => {
+      console.error(event);
+      this.sourceEvents.push('ERROR');
+    });
+    event.addEventListener('message', (event) => {
+      console.info(event);
+      this.sourceEvents.push(event.data);
+    });
+  }
+
+  public error(): void {
+    this.httpClient.get(`${this.apiBaseUrl}/error`).subscribe();
   }
 
   public close(): void {
