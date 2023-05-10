@@ -146,7 +146,7 @@ export class SseClient {
     const field = line.substring(0, index);
     if (Object.keys(event).findIndex((key: string) => key === field) === -1) return;
 
-    let data = line.substring(index + 1);
+    let data = line.substring(index + 1).replace(/^\s+/,'');
     if (field === 'data') data = event.data + data;
 
     event[field] = data;
