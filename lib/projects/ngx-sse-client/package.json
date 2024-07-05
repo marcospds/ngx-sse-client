@@ -1,6 +1,6 @@
 {
   "name": "ngx-sse-client",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A simple SSE (Server Sent Events) client for Angular applications.",
   "keywords": [
     "angular",
