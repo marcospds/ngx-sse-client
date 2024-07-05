@@ -1,6 +1,6 @@
 {
   "name": "ngx-sse-client",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "A simple SSE (Server Sent Events) client for Angular applications.",
   "keywords": [
     "angular",
@@ -8,14 +8,14 @@
     "sse-client",
     "ngx"
   ],
-  "homepage": "https://github.com/rubinhos/ngx-sse-client",
+  "homepage": "https://github.com/marcospds/ngx-sse-client",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rubinhos/ngx-sse-client.git"
+    "url": "https://github.com/marcospds/ngx-sse-client.git"
   },
   "bugs": {
-    "url": "https://github.com/rubinhos/ngx-sse-client/issues",
-    "email": "rubinho.santos@outlook.com"
+    "url": "https://github.com/marcospds/ngx-sse-client/issues",
+    "email": "marcos_p21@hotmail.com"
   },
   "license": "MIT",
   "author": {
