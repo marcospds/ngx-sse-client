@@ -24,8 +24,8 @@
     "url": "https://github.com/rubinhos"
   },
   "peerDependencies": {
-    "@angular/common": ">=12.2.0",
-    "@angular/core": ">=12.2.0"
+    "@angular/common": ">=13.4.0",
+    "@angular/core": ">=13.4.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

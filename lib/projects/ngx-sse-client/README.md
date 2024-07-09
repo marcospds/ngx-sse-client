@@ -110,6 +110,12 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 
 ## CHANGELOG
 
+### 13.0.0
+
+:warning: Official minimum `Angular` version support changed to **13.4.0**!
+
+:information_source: Change of nomenclature to be consistent with the Angular version. Version 13.x.x of ngx-sse-client is compatible with v13 of Angular, and so on.
+
 ### 3.0.0
 
 :warning: Official minimum `Angular` version support changed to **12.2.0**!
