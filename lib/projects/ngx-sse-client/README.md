@@ -110,6 +110,10 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 
 ## CHANGELOG
 
+### 14.0.0
+
+:warning: Official minimum `Angular` version support changed to **14.3.0**!
+
 ### 13.0.0
 
 :warning: Official minimum `Angular` version support changed to **13.4.0**!

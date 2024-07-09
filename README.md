@@ -7,7 +7,7 @@ A simple **SSE** (Server Sent Events) client for `Angular` applications. More in
 ### Client
 
 ```
-cd lid
+cd lib
 npm run watch
 ```
 
