@@ -2,6 +2,7 @@
 
 # compiled output
 lib/dist
+lib/.angular
 
 # dependencies
 **/node_modules
