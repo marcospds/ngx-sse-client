@@ -27,7 +27,7 @@
     "start": "npx ng serve",
     "build": "npx ng build ngx-sse-client",
     "build:prod": "npx ng build ngx-sse-client --configuration production",
-    "watch": "npx ng build --watch --configuration development",
+    "watch": "npx ng build ngx-sse-client --watch --configuration development",
     "test": "npx ng test"
   },
   "private": false,
