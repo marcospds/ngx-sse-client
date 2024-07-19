@@ -37,53 +37,27 @@
         }
       }
     },
-    "sample": {
+    "sample2": {
       "projectType": "application",
-      "schematics": {
-        "@schematics/angular:class": {
-          "skipTests": true
-        },
-        "@schematics/angular:component": {
-          "skipTests": true
-        },
-        "@schematics/angular:directive": {
-          "skipTests": true
-        },
-        "@schematics/angular:guard": {
-          "skipTests": true
-        },
-        "@schematics/angular:interceptor": {
-          "skipTests": true
-        },
-        "@schematics/angular:pipe": {
-          "skipTests": true
-        },
-        "@schematics/angular:service": {
-          "skipTests": true
-        },
-        "@schematics/angular:application": {
-          "strict": true
-        }
-      },
-      "root": "projects/sample",
-      "sourceRoot": "projects/sample/src",
+      "$schema": "node_modules/nx/schemas/project-schema.json",
+      "root": "projects/sample2",
+      "sourceRoot": "projects/sample2/src",
       "prefix": "app",
+      "tags": [],
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/sample",
-            "index": "projects/sample/src/index.html",
-            "main": "projects/sample/src/main.ts",
-            "polyfills": "projects/sample/src/polyfills.ts",
-            "tsConfig": "projects/sample/tsconfig.app.json",
+            "outputPath": "dist/sample2",
+            "index": "projects/sample2/src/index.html",
+            "main": "projects/sample2/src/main.ts",
+           "polyfills": ["zone.js"],
+            "tsConfig": "projects/sample2/tsconfig.app.json",
             "assets": [
-              "projects/sample/src/favicon.ico",
-              "projects/sample/src/assets"
+              "projects/sample2/src/favicon.ico",
+              "projects/sample2/src/assets"
             ],
-            "styles": [
-              "projects/sample/src/styles.css"
-            ],
+            "styles": ["projects/sample2/src/styles.scss"],
             "scripts": []
           },
           "configurations": {
@@ -102,8 +76,8 @@
               ],
               "fileReplacements": [
                 {
-                  "replace": "projects/sample/src/environments/environment.ts",
-                  "with": "projects/sample/src/environments/environment.prod.ts"
+                  "replace": "projects/sample2/src/environments/environment.ts",
+                  "with": "projects/sample2/src/environments/environment.prod.ts"
                 }
               ],
               "outputHashing": "all"
@@ -123,10 +97,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "sample:build:production"
+              "buildTarget": "sample2:build:production"
             },
             "development": {
-              "buildTarget": "sample:build:development"
+              "buildTarget": "sample2:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -134,22 +108,22 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "sample:build"
+            "buildTarget": "sample2:build"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/sample/src/test.ts",
-            "polyfills": "projects/sample/src/polyfills.ts",
-            "tsConfig": "projects/sample/tsconfig.spec.json",
-            "karmaConfig": "projects/sample/karma.conf.js",
+            "main": "projects/sample2/src/test.ts",
+            "polyfills": "projects/sample2/src/polyfills.ts",
+            "tsConfig": "projects/sample2/tsconfig.spec.json",
+            "karmaConfig": "projects/sample2/karma.conf.js",
             "assets": [
-              "projects/sample/src/favicon.ico",
-              "projects/sample/src/assets"
+              "projects/sample2/src/favicon.ico",
+              "projects/sample2/src/assets"
             ],
             "styles": [
-              "projects/sample/src/styles.css"
+              "projects/sample2/src/styles.css"
             ],
             "scripts": []
           }

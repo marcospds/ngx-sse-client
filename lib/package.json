@@ -25,6 +25,7 @@
   },
   "scripts": {
     "start": "npx ng serve",
+    "start:sample2": "npx ng serve --project=sample2",
     "build": "npx ng build ngx-sse-client",
     "build:prod": "npx ng build ngx-sse-client --configuration production",
     "watch": "npx ng build ngx-sse-client --watch --configuration development",
@@ -48,7 +49,7 @@
     "@angular-devkit/build-angular": "~17.3.8",
     "@angular/cli": "~17.3.8",
     "@angular/compiler-cli": "~17.3.11",
-    "@types/node": "^17.0.21",
+    "@types/node": "^18.0.0",
     "ng-packagr": "^17.3.0",
     "typescript": "~5.2.0"
   }
