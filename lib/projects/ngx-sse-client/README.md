@@ -110,6 +110,11 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 
 ## CHANGELOG
 
+### 17.0.1
+
+- fixed warning @types/node version, changed to ^18.0.0.
+- fixed the issue when using multiple concurrent streams.
+
 ### 17.0.0
 
 :warning: Official minimum `Angular` version support changed to **17.3.11**!
