@@ -8,6 +8,7 @@ import { environment } from '../environments/environment';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
+  standalone: false
 })
 export class AppComponent {
   private apiBaseUrl = environment?.apiBaseUrl || '';
