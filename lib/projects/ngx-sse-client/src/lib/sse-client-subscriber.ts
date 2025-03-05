@@ -81,7 +81,12 @@ export class SseClientSubscriber {
     this.chunk = '';
     this.progress = 0;
 
-    this.dispatchStreamData(this.errorEvent(), observer);
+    if (this.sseOptions.keepAlive) {
+      const message = `Server response ended, will reconnect in ${this.sseOptions.reconnectionDelay}ms`;
+      this.dispatchStreamData(this.errorEvent({ status: 1, message }), observer);
+    } else {
+      observer.complete();
+    }
   }
 
   private parseEventData(part: string, observer: Subscriber<string>) {
