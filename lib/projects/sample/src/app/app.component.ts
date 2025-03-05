@@ -18,7 +18,7 @@ export class AppComponent {
   public sourceEvents: string[] = [];
 
   constructor(private httpClient: HttpClient, private sseClient: SseClient) {
-    this.sseClient.stream(`${this.apiBaseUrl}/subscribe`, { keepAlive: true }).subscribe({
+    this.sseClient.stream(`${this.apiBaseUrl}/subscribe`).subscribe({
       next:(e) => {
       if (e.type === 'error') {
         const event = e as SseErrorEvent;
