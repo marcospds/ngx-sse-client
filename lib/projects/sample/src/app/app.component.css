@@ -5,7 +5,9 @@ small {
 .events {
   display: flex;
   justify-content: space-between;
-  max-width: 1200px;
+  font-family: monospace;
+  max-width: 1800px;
+  padding-right: 10px;
 }
 
 .buttons {

@@ -7,6 +7,11 @@
   </div>
 
   <div class="event">
+    <h1>SSE Events <small>(using <code>ngx-sse-client</code> with <code>keepAlive: false</code>):</small></h1>
+    <div *ngFor="let event of sseEventsWithoutKeepalive">{{ event }}</div>
+  </div>
+
+  <div class="event">
     <h1>SOURCE Events <small>(not compatible with IE):</small></h1>
     <div *ngFor="let event of sourceEvents">{{ event }}</div>
   </div>

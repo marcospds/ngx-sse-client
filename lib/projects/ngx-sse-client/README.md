@@ -110,6 +110,10 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 
 ## CHANGELOG
 
+### 19.0.1
+
+- fixed server response ends with non descript error on `keepAlive` _false_.
+
 ### 19.0.0
 
 :warning: Official minimum `Angular` version support changed to **19.1.3**!
