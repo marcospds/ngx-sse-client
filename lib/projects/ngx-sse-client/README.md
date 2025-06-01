@@ -110,6 +110,10 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 
 ## CHANGELOG
 
+### 20.0.0
+
+:warning: Official minimum `Angular` version support changed to **20.0.0**!
+
 ### 19.0.2
 
 - fixed the issue when `data` of message with any `falsy` value.
