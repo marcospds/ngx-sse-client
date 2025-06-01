@@ -26,6 +26,7 @@ app.get('/subscribe', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.on('close', () => removeEmitters([emitter]));
   res.flushHeaders();
+  res.write(`${END_CONTENT}`);
 
   emitters.push(emitter);
   console.info(`SUBSCRIBED ID ${emitter.id}`);

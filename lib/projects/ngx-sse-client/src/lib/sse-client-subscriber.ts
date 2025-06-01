@@ -69,6 +69,7 @@ export class SseClientSubscriber {
   }
 
   private onStreamProgress(data: string, observer: Subscriber<string>): void {
+    if(!data) return;
     data = data.substring(this.progress);
     this.progress += data.length;
     data.split(/(\r\n|\r|\n){2}/g).forEach((part) => this.parseEventData(part, observer));
