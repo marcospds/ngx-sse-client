@@ -34,7 +34,7 @@ app.get('/subscribe', (req, res) => {
 app.get('/emit', (_, res) => {
   emitters.forEach(({ id, client }) => {
     console.info(`EMITTED    ID ${id}`);
-    client.write(`id: ${id}${END_LINE}data: ${new Date().toISOString()}${END_CONTENT}`);
+    client.write(`${END_CONTENT}`);
   });
 
   res.status(200).send();
