@@ -26,6 +26,7 @@ app.get('/subscribe', (req, res) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.on('close', () => removeEmitters([emitter]));
   res.flushHeaders();
+  res.write(`${END_CONTENT}`);
 
   emitters.push(emitter);
   console.info(`SUBSCRIBED ID ${emitter.id}`);
@@ -34,7 +35,7 @@ app.get('/subscribe', (req, res) => {
 app.get('/emit', (_, res) => {
   emitters.forEach(({ id, client }) => {
     console.info(`EMITTED    ID ${id}`);
-    client.write(`${END_CONTENT}`);
+    client.write(`id: ${id}${END_LINE}data: ${new Date().toISOString()}${END_CONTENT}`);
   });
 
   res.status(200).send();
