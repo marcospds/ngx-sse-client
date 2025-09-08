@@ -13,7 +13,7 @@ export interface SseOptions {
    * Delay before reconnecting with the server, this is only useful when
    * `keepAlive` is `true`.
    *
-   * @default `5000`
+   * @default `3000`
    */
   reconnectionDelay: number;
 
