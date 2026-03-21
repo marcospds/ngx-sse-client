@@ -3,21 +3,21 @@
     <h1>
       SSE Events <small>(using <code>ngx-sse-client</code>):</small>
     </h1>
-    @for (event of sseEvents; track event) {
+    @for (event of sseEvents(); track event) {
       <div>{{ event }}</div>
     }
   </div>
 
   <div class="event">
     <h1>SSE Events <small>(using <code>ngx-sse-client</code> with <code>keepAlive: false</code>):</small></h1>
-    @for (event of sseEventsWithoutKeepalive; track event) {
+    @for (event of sseEventsWithoutKeepalive(); track event) {
       <div>{{ event }}</div>
     }
   </div>
 
   <div class="event">
     <h1>SOURCE Events <small>(not compatible with IE):</small></h1>
-    @for (event of sourceEvents; track event) {
+    @for (event of sourceEvents(); track event) {
       <div>{{ event }}</div>
     }
   </div>
