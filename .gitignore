@@ -6,3 +6,6 @@ lib/.angular
 
 # dependencies
 **/node_modules
+
+# IDE
+.idea

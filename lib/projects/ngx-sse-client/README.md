@@ -110,6 +110,10 @@ this.sseClient.stream('/subscribe', { responseType: 'text' }).subscribe((data) =
 
 ## CHANGELOG
 
+### 21.0.0
+
+:warning: Official minimum `Angular` version support changed to **21.0.0**!
+
 ### 20.0.1
 
 - fixed `sse-options.interface.ts` to make docs match code.
