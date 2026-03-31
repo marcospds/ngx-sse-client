@@ -13,7 +13,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "builder": "@angular/build:ng-packagr",
           "options": {
             "project": "projects/ngx-sse-client/ng-package.json"
           },
@@ -28,7 +28,7 @@
           "defaultConfiguration": "production"
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
             "main": "projects/ngx-sse-client/src/test.ts",
             "tsConfig": "projects/ngx-sse-client/tsconfig.spec.json",
@@ -70,12 +70,15 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular/build:application",
           "options": {
-            "outputPath": "dist/sample",
+            "outputPath": {
+              "base": "dist/sample"
+            },
             "index": "projects/sample/src/index.html",
-            "main": "projects/sample/src/main.ts",
-            "polyfills": "projects/sample/src/polyfills.ts",
+            "polyfills": [
+              "projects/sample/src/polyfills.ts"
+            ],
             "tsConfig": "projects/sample/tsconfig.app.json",
             "assets": [
               "projects/sample/src/favicon.ico",
@@ -84,7 +87,8 @@
             "styles": [
               "projects/sample/src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "browser": "projects/sample/src/main.ts"
           },
           "configurations": {
             "production": {
@@ -109,9 +113,7 @@
               "outputHashing": "all"
             },
             "development": {
-              "buildOptimizer": false,
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
@@ -120,7 +122,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
               "buildTarget": "sample:build:production"
@@ -132,13 +134,13 @@
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@angular/build:extract-i18n",
           "options": {
             "buildTarget": "sample:build"
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular/build:karma",
           "options": {
             "main": "projects/sample/src/test.ts",
             "polyfills": "projects/sample/src/polyfills.ts",
