@@ -54,6 +54,10 @@ export class SseClientSubscriber {
   private parseStreamEvent(event: HttpEvent<string>, observer: Subscriber<string>): void {
     if (event.type === HttpEventType.Sent) {
       this.progress = 0;
+      // A retryWhen reconnection skips onStreamCompleted, so reset the buffer here
+      // as well; otherwise a partial event from the dropped stream would merge into
+      // the first event of the new one.
+      this.chunk = '';
       return;
     }
 
@@ -69,10 +73,24 @@ export class SseClientSubscriber {
   }
 
   private onStreamProgress(data: string, observer: Subscriber<string>): void {
-    if(!data) return;
-    data = data.substring(this.progress);
-    this.progress += data.length;
-    data.split(/(\r\n|\r|\n){2}/g).forEach((part) => this.parseEventData(part, observer));
+    if (!data) return;
+
+    const fresh = data.substring(this.progress);
+    this.progress += fresh.length;
+
+    // Progress slices break at arbitrary byte boundaries, so an event terminator can
+    // straddle two slices. Buffer the raw text and only emit once a full terminator is
+    // present; splitting each slice on its own would merge two events when a boundary
+    // landed inside a terminator.
+    this.chunk += fresh;
+
+    let match: RegExpExecArray | null;
+    const boundary = /\r\n\r\n|\n\n|\r\r/;
+    while ((match = boundary.exec(this.chunk))) {
+      const event = this.chunk.slice(0, match.index);
+      this.chunk = this.chunk.slice(match.index + match[0].length);
+      this.dispatchStreamData(this.parseEventChunk(event), observer);
+    }
   }
 
   private onStreamCompleted(response: HttpResponse<string>, observer: Subscriber<string>): void {
@@ -87,15 +105,6 @@ export class SseClientSubscriber {
       this.dispatchStreamData(this.errorEvent({ status: 1, message }), observer);
     } else {
       observer.complete();
-    }
-  }
-
-  private parseEventData(part: string, observer: Subscriber<string>) {
-    if (part.trim().length === 0) {
-      this.dispatchStreamData(this.parseEventChunk(this.chunk), observer);
-      this.chunk = '';
-    } else {
-      this.chunk += part;
     }
   }
 
